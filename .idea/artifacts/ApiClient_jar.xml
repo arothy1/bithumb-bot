@@ -1,0 +1,11 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="ApiClient:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/ApiClient_jar</output-path>
+    <root id="archive" name="ApiClient.jar">
+      <element id="module-output" name="ApiClient" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/lib/jackson-all-1.9.11.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/lib/commons-codec-1.10.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/lib/guava-18.0.jar" path-in-jar="/" />
+    </root>
+  </artifact>
+</component>
