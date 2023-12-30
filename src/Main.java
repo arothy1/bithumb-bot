@@ -46,6 +46,7 @@ public class Main {
 		HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 
 		connection.setRequestMethod("GET");
+		connection.setUseCaches(false);
 
 		BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8));
 		StringBuilder stringBuilder = new StringBuilder();
@@ -67,6 +68,7 @@ public class Main {
 		HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 
 		connection.setRequestMethod("GET");
+		connection.setUseCaches(false);
 
 		BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8));
 		StringBuilder stringBuilder = new StringBuilder();
@@ -80,7 +82,7 @@ public class Main {
         return stringBuilder.toString();
 	}
 
-    private static void order() {
+    private static void order() throws IOException {
         Api_Client api = new Api_Client(connectKey,
             secretKey);
 
@@ -89,6 +91,11 @@ public class Main {
 
 		int count = 0;
 		while (true) {
+			if (count % 1000 == 0) {
+				if (Objects.equals("1", getMaintenanceStatus())) {
+					return;
+				}
+			}
             try {
                 System.out.println("count: " + count);
                 String result = api.callApiGet("/public/orderbook/BTC_KRW", rgParamsOrderbook);
