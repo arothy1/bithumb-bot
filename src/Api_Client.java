@@ -86,6 +86,7 @@ public class Api_Client {
         }
 
         catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
             result = s;
         }
 
