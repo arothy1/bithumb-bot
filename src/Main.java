@@ -53,6 +53,7 @@ public class Main {
 
 		while ((inputLine = bufferedReader.readLine()) != null)  {
 			stringBuilder.append(inputLine);
+			stringBuilder.append("\n");
 		}
 		bufferedReader.close();
 
@@ -73,6 +74,7 @@ public class Main {
 
 		while ((inputLine = bufferedReader.readLine()) != null)  {
 			stringBuilder.append(inputLine);
+			stringBuilder.append("\n");
 		}
 		bufferedReader.close();
 
