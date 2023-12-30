@@ -23,7 +23,12 @@ public class Main {
 	static String secretKey;
     static ObjectMapper om = new ObjectMapper();
 
-    public static void main(String args[]) {
+    public static void main(String args[]) throws IOException {
+
+		getNotice();
+		if (Objects.equals("1", getMaintenanceStatus())) {
+			return;
+		}
 
 		connectKey = "";
 		System.out.println(String.format("%s 사용자님 안녕하세요", connectKey));
@@ -33,6 +38,45 @@ public class Main {
         order();
 
     }
+
+	private static String getNotice() throws IOException {
+		URL url = new URL("https://raw.githubusercontent.com/arothy1/B_setting/master/notice");
+		HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+
+		connection.setRequestMethod("GET");
+
+		BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+		StringBuffer stringBuffer = new StringBuffer();
+		String inputLine;
+
+		while ((inputLine = bufferedReader.readLine()) != null)  {
+			stringBuffer.append(inputLine);
+		}
+		bufferedReader.close();
+
+		String response = stringBuffer.toString();
+		System.out.println(response);
+		return response;
+	}
+
+	private static String getMaintenanceStatus() throws IOException {
+		URL url = new URL("https://raw.githubusercontent.com/arothy1/B_setting/master/maintenence");
+		HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+
+		connection.setRequestMethod("GET");
+
+		BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+		StringBuilder stringBuilder = new StringBuilder();
+		String inputLine;
+
+		while ((inputLine = bufferedReader.readLine()) != null)  {
+			stringBuilder.append(inputLine);
+		}
+		bufferedReader.close();
+
+		String response = stringBuilder.toString();
+		return response;
+	}
 
     private static void order() {
         Api_Client api = new Api_Client(connectKey,
