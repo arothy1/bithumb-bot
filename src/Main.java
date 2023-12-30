@@ -16,8 +16,8 @@ import org.codehaus.jackson.map.ObjectMapper;
 public class Main {
 
     static final int MINIMUM_TICK = 1000;
-    static final String BID_AMOUNT = "0.0005";
-    static final String ASK_AMOUNT = "0.0005";
+    static final String BID_AMOUNT = "0.001";
+    static final String ASK_AMOUNT = "0.001";
 	static final int sleep = 100;
 	static String connectKey;
 	static String secretKey;
@@ -25,31 +25,20 @@ public class Main {
 
     public static void main(String args[]) {
 
-		System.out.println("[connectKey]를 입력하세요(엔터)");
-		connectKey = new Scanner(System.in).nextLine();
+		connectKey = "1fe31b5302e660b3285b26d438344c6f";
 		System.out.println("[secretKey]를 입력하세요(엔터)");
 		secretKey = new Scanner(System.in).nextLine();
 
-		if (wasExpired()) {
-			System.out.println("사용기한이 만료되어 종료됩니다.");
-		}
-
-//		clearOrder();
         order();
 
     }
-
-	private static boolean wasExpired() {
-		LocalDateTime endDate = LocalDateTime.parse("2024-01-31 23:59:59", DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-		return LocalDateTime.now().isAfter(endDate);
-	}
 
     private static void order() {
         Api_Client api = new Api_Client(connectKey,
             secretKey);
 
         HashMap<String, String> rgParamsOrderbook = new HashMap();
-        rgParamsOrderbook.put("count", "5");
+        rgParamsOrderbook.put("count", "2");
 
 		int count = 0;
 		while (true) {
@@ -91,7 +80,6 @@ public class Main {
                 Thread.sleep(sleep);
             } catch (Exception e) {
 				cancelOrder();
-//                e.printStackTrace();
             } finally {
 				count++;
 			}
@@ -123,7 +111,6 @@ public class Main {
             }
         } catch (Exception e) {
             // ignore
-//            e.printStackTrace();
         }
     }
 
@@ -153,7 +140,6 @@ public class Main {
 			}
 		} catch (Exception e) {
 			// ignore
-//            e.printStackTrace();
 		}
 	}
 
@@ -180,7 +166,6 @@ public class Main {
 			}
 		} catch (Exception e) {
 			// ignore
-//            e.printStackTrace();
 		}
 	}
 }
