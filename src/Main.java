@@ -6,13 +6,12 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.sql.Array;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Scanner;
+import java.util.*;
+
+import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 
 public class Main {
@@ -32,14 +31,37 @@ public class Main {
 			return;
 		}
 
-		connectKey = "";
-		System.out.println(String.format("%s 사용자님 안녕하세요", connectKey));
+		System.out.println("[connectKey]를 입력하세요(엔터)");
+		connectKey = new Scanner(System.in).nextLine();
+		if (!getMembers().contains(connectKey)) {
+			System.out.printf("[%s]은 사용할 수 없습니다. 관리자에게 문의하세요.%n", connectKey);
+			return;
+		}
+		System.out.printf("%s 사용자님 안녕하세요%n", connectKey);
 		System.out.println("[secretKey]를 입력하세요(엔터)");
 		secretKey = new Scanner(System.in).nextLine();
 
         order();
 
     }
+
+	private static List<String> getMembers() throws IOException {
+		List<String> members = new ArrayList<>();
+		URL url = new URL("https://raw.githubusercontent.com/arothy1/B_setting/master/member");
+		HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+
+		connection.setRequestMethod("GET");
+		connection.setUseCaches(false);
+
+		BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8));
+		String inputLine;
+
+		while ((inputLine = bufferedReader.readLine()) != null)  {
+			members.add(inputLine);
+		}
+		bufferedReader.close();
+		return members;
+	}
 
 	private static String getNotice() throws IOException {
 		URL url = new URL("https://raw.githubusercontent.com/arothy1/B_setting/master/notice");
