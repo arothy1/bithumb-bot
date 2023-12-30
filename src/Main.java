@@ -25,7 +25,7 @@ public class Main {
 
     public static void main(String args[]) {
 
-		connectKey = "1fe31b5302e660b3285b26d438344c6f";
+		connectKey = "";
 		System.out.println("[secretKey]를 입력하세요(엔터)");
 		secretKey = new Scanner(System.in).nextLine();
 
