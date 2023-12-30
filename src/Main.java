@@ -4,6 +4,8 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
@@ -45,16 +47,16 @@ public class Main {
 
 		connection.setRequestMethod("GET");
 
-		BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-		StringBuffer stringBuffer = new StringBuffer();
+		BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8));
+		StringBuilder stringBuilder = new StringBuilder();
 		String inputLine;
 
 		while ((inputLine = bufferedReader.readLine()) != null)  {
-			stringBuffer.append(inputLine);
+			stringBuilder.append(inputLine);
 		}
 		bufferedReader.close();
 
-		String response = stringBuffer.toString();
+		String response = stringBuilder.toString();
 		System.out.println(response);
 		return response;
 	}
@@ -65,7 +67,7 @@ public class Main {
 
 		connection.setRequestMethod("GET");
 
-		BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+		BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8));
 		StringBuilder stringBuilder = new StringBuilder();
 		String inputLine;
 
@@ -74,8 +76,7 @@ public class Main {
 		}
 		bufferedReader.close();
 
-		String response = stringBuilder.toString();
-		return response;
+        return stringBuilder.toString();
 	}
 
     private static void order() {
