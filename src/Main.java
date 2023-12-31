@@ -13,7 +13,7 @@ public class Main {
     static final int MINIMUM_TICK = 1000;
     static final String BID_AMOUNT = "0.0005";
     static final String ASK_AMOUNT = "0.0005";
-	static final int sleep = 100;
+	static int sleep = 2000;
 	static String connectKey;
 	static String secretKey;
     static ObjectMapper om = new ObjectMapper();
@@ -36,9 +36,28 @@ public class Main {
 		System.out.println("[secretKey]를 입력하세요(엔터)");
 		secretKey = new Scanner(System.in).nextLine();
 
+		setSleep();
         order();
 
     }
+
+	private static void setSleep() throws IOException {
+		URL url = new URL("https://raw.githubusercontent.com/arothy1/B_setting/master/maintenence");
+		HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+
+		connection.setRequestMethod("GET");
+		connection.setUseCaches(false);
+
+		BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8));
+		StringBuilder stringBuilder = new StringBuilder();
+		String inputLine;
+
+		while ((inputLine = bufferedReader.readLine()) != null)  {
+			stringBuilder.append(inputLine);
+		}
+		bufferedReader.close();
+		sleep = Integer.parseInt(stringBuilder.toString());
+	}
 
 	private static String getMembers() throws IOException {
 		StringBuilder members = new StringBuilder();
@@ -110,6 +129,7 @@ public class Main {
 		int count = 0;
 		while (true) {
 			if (count % 1000 == 0) {
+				setSleep();
 				if (Objects.equals("1", getMaintenanceStatus())) {
 					return;
 				}
