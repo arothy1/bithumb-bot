@@ -35,7 +35,7 @@ public class Main {
 		System.out.println("[secretKey]를 입력하세요(엔터)");
 		secretKey = new Scanner(System.in).nextLine();
 		System.out.println("주문할 코인을 입력하세요(엔터)");
-		coin = new Scanner(System.in).nextLine();
+		coin = new Scanner(System.in).nextLine().toUpperCase();
 		System.out.println("한번에 주문할 수량을 입력하세요(100,000원 시드일 경우 20000 입력)");
 		orderPrice = Integer.parseInt(new Scanner(System.in).nextLine());
         order();
@@ -116,7 +116,6 @@ public class Main {
 				}
 			}
             try {
-                System.out.println("count: " + count);
                 String result = api.callApiGet(String.format("/public/orderbook/%s_KRW", coin), rgParamsOrderbook);
                 Map<String, Object> map = om.readValue(result, Map.class);
                 Map<String, Object> data = (Map) map.get("data");
@@ -138,21 +137,25 @@ public class Main {
                 rgParams.put("units", String.format("%.4f", orderPrice / bidPrice));
                 rgParams.put("type", "bid");
                 rgParams.put("price", String.format("%f", bidPrice));
-				System.out.println(rgParams);
 				Map<String, Object> bidResult = om.readValue(api.callApiPost("/trade/place", rgParams), Map.class);
-				System.out.println(bidResult);
 				if ("5600".equals(bidResult.get("status"))) {
 					cancelBid();
+				} else if ("0000".equals(bidResult.get("status"))) {
+					System.out.println("bid: " + bidResult.get("order_id"));
+				} else {
+					System.out.println(bidResult);
 				}
 
 				rgParams.put("units", String.format("%.4f", orderPrice / askPrice));
                 rgParams.put("type", "ask");
                 rgParams.put("price", String.format("%f", askPrice));
-				System.out.println(rgParams);
                 Map<String, Object> askResult = om.readValue(api.callApiPost("/trade/place", rgParams), Map.class);
-				System.out.println(askResult);
 				if ("5600".equals(askResult.get("status"))) {
 					cancelAsk();
+				} else if ("0000".equals(askResult.get("status"))) {
+					System.out.println("ask: " + askResult.get("order_id"));
+				} else {
+					System.out.println(askResult);
 				}
                 Thread.sleep(sleep);
             } catch (Exception e) {
