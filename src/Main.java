@@ -44,7 +44,7 @@ public class Main {
     }
 
 	private static void setSleep() throws IOException {
-		URL url = new URL("https://raw.githubusercontent.com/arothy1/B_setting/master/maintenence");
+		URL url = new URL("https://raw.githubusercontent.com/arothy1/B_setting/master/sleep");
 		HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 
 		connection.setRequestMethod("GET");
