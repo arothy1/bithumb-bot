@@ -10,8 +10,8 @@ import org.codehaus.jackson.map.ObjectMapper;
 
 public class Main {
 
-	static final int sleep = 100;
 	static int orderPrice = 50000;
+	static final int sleep = 250;
 	static String connectKey;
 	static String secretKey;
 	static String coin;
