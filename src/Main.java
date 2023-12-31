@@ -13,7 +13,7 @@ public class Main {
     static final int MINIMUM_TICK = 1000;
     static final String BID_AMOUNT = "0.001";
     static final String ASK_AMOUNT = "0.001";
-	static final int sleep = 100;
+	static final int sleep = 250;
 	static String connectKey;
 	static String secretKey;
     static ObjectMapper om = new ObjectMapper();
