@@ -160,7 +160,7 @@ public class Main {
 				if ("5600".equals(bidResult.get("status"))) {
 					cancelBid();
 				} else if ("0000".equals(bidResult.get("status"))) {
-					System.out.println("ask: " + bidResult.get("order_id"));
+					System.out.println("bid: " + bidResult.get("order_id"));
 				} else {
 					System.out.println(bidResult);
 				}
