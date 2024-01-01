@@ -130,7 +130,7 @@ public class Main {
 
 		int count = 0;
 		while (true) {
-			if (count % 1000 == 0) {
+			if (count % 500 == 0) {
 				setSleep();
 				if (Objects.equals("1", getMaintenanceStatus())) {
 					return;
