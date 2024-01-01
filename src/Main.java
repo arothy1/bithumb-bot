@@ -128,14 +128,13 @@ public class Main {
 
 		int count = 0;
 		while (true) {
-			if (count % 1000 == 0) {
+			if (count % 500 == 0) {
 				setSleep();
 				if (Objects.equals("1", getMaintenanceStatus())) {
 					return;
 				}
 			}
             try {
-                System.out.println("count: " + count);
                 String result = api.callApiGet("/public/orderbook/BTC_KRW", rgParamsOrderbook);
                 Map<String, Object> map = om.readValue(result, Map.class);
                 Map<String, Object> data = (Map) map.get("data");
@@ -160,6 +159,10 @@ public class Main {
 				Map<String, Object> bidResult = om.readValue(api.callApiPost("/trade/place", rgParams), Map.class);
 				if ("5600".equals(bidResult.get("status"))) {
 					cancelBid();
+				} else if ("0000".equals(bidResult.get("status"))) {
+					System.out.println("ask: " + bidResult.get("order_id"));
+				} else {
+					System.out.println(bidResult);
 				}
 
                 rgParams.put("units", ASK_AMOUNT);
@@ -168,6 +171,10 @@ public class Main {
                 Map<String, Object> askResult = om.readValue(api.callApiPost("/trade/place", rgParams), Map.class);
 				if ("5600".equals(askResult.get("status"))) {
 					cancelAsk();
+				} else if ("0000".equals(askResult.get("status"))) {
+					System.out.println("ask: " + askResult.get("order_id"));
+				} else {
+					System.out.println(askResult);
 				}
                 Thread.sleep(sleep);
             } catch (Exception e) {
