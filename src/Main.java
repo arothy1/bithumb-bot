@@ -13,7 +13,7 @@ public class Main {
     static final int MINIMUM_TICK = 1000;
     static final String BID_AMOUNT = "0.001";
     static final String ASK_AMOUNT = "0.001";
-	static int sleep = 500;
+	static int sleep = 1000;
 	static String connectKey;
 	static String secretKey;
 	static String coin;
@@ -151,26 +151,39 @@ public class Main {
                 rgParams.put("units", BID_AMOUNT);
                 rgParams.put("type", "bid");
                 rgParams.put("price", String.format("%d", bidPrice));
-				Map<String, Object> bidResult = om.readValue(api.callApiPost("/trade/place", rgParams), Map.class);
-				if ("5600".equals(bidResult.get("status"))) {
+
+				try {
+					String bidResult = om.readValue(api.callApiPost("/trade/place", rgParams), String.class);
+					if (bidResult.contains("\"status\":\"5600\"")) {
+						cancelBid();
+					} else if (bidResult.contains("\"status\":\"0000\"")) {
+						System.out.println("bid: " + bidResult.substring(18, bidResult.length() -1));
+					} else {
+						System.out.println(bidResult);
+					}
+				} catch (Exception e) {
 					cancelBid();
-				} else if ("0000".equals(bidResult.get("status"))) {
-					System.out.println("bid: " + bidResult.get("order_id"));
-				} else {
-					System.out.println(bidResult);
+//					e.printStackTrace();
 				}
+
 
                 rgParams.put("units", ASK_AMOUNT);
                 rgParams.put("type", "ask");
                 rgParams.put("price", String.format("%d", askPrice));
-                Map<String, Object> askResult = om.readValue(api.callApiPost("/trade/place", rgParams), Map.class);
-				if ("5600".equals(askResult.get("status"))) {
+
+				try {
+					String askResult = om.readValue(api.callApiPost("/trade/place", rgParams), String.class);
+					if (askResult.contains("\"status\":\"5600\"")) {
+						cancelAsk();
+					} else if (askResult.contains("\"status\":\"0000\"")) {
+						System.out.println("ask: " + askResult.substring(18, askResult.length() -1));
+					} else {
+						System.out.println(askResult);
+					}
+				} catch (Exception e) {
 					cancelAsk();
-				} else if ("0000".equals(askResult.get("status"))) {
-					System.out.println("ask: " + askResult.get("order_id"));
-				} else {
-					System.out.println(askResult);
 				}
+
                 Thread.sleep(sleep);
             } catch (Exception e) {
 				errorCount++;
