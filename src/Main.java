@@ -16,6 +16,8 @@ public class Main {
 	static int sleep = 2000;
 	static String connectKey;
 	static String secretKey;
+	static String coin;
+	static int acceleration = 1;
     static ObjectMapper om = new ObjectMapper();
 
     public static void main(String args[]) throws IOException, InterruptedException {
@@ -35,6 +37,8 @@ public class Main {
 		System.out.printf("%s 사용자님 안녕하세요%n", connectKey);
 		System.out.println("[secretKey]를 입력하세요(엔터)");
 		secretKey = new Scanner(System.in).nextLine();
+		System.out.println("가속화 하시겠습니까?(y/N)(2개 이상 계정 운영하면 N)");
+		acceleration = new Scanner(System.in).nextLine().equals("y") ? 2 : 1;
 
 		setSleep();
         order();
@@ -56,7 +60,7 @@ public class Main {
 			stringBuilder.append(inputLine);
 		}
 		bufferedReader.close();
-		sleep = Integer.parseInt(stringBuilder.toString());
+		sleep = Integer.parseInt(stringBuilder.toString()) / acceleration;
 	}
 
 	private static String getMembers() throws IOException {
