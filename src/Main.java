@@ -13,7 +13,7 @@ public class Main {
     static final int MINIMUM_TICK = 1000;
     static final String BID_AMOUNT = "0.0005";
     static final String ASK_AMOUNT = "0.0005";
-	static int sleep = 1000;
+	static int sleep = 500;
 	static String connectKey;
 	static String secretKey;
 	static String coin;
@@ -214,6 +214,7 @@ public class Main {
 					if (type.equals("ask")) {
 						continue;
 					}
+					Thread.sleep(sleep);
 					rgParams.put("order_id", orderId);
 					rgParams.put("type", type);
 					api.callApiPost("/trade/cancel", rgParams);
@@ -245,6 +246,7 @@ public class Main {
 					if (type.equals("bid")) {
 						continue;
 					}
+					Thread.sleep(sleep);
 					rgParams.put("order_id", orderId);
 					rgParams.put("type", type);
 					api.callApiPost("/trade/cancel", rgParams);
