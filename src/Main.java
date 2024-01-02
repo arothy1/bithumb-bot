@@ -40,7 +40,7 @@ public class Main {
 		System.out.println("한번에 주문할 원화가치를 입력하세요(시드가 10만원 일 경우 20000 이 적당합니다.)");
 		orderPrice = Integer.parseInt(new Scanner(System.in).nextLine());
 		System.out.println("가속화 하시겠습니까?(y/N)(2개 이상 계정 운영하면 N)");
-		acceleration = new Scanner(System.in).nextLine().equals("y") ? 2 : 1;
+		acceleration = new Scanner(System.in).nextLine().equalsIgnoreCase("y") ? 2 : 1;
 
 		setSleep();
         order();
