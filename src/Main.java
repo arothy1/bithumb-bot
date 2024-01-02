@@ -151,26 +151,39 @@ public class Main {
                 rgParams.put("units", String.format("%.4f", orderPrice / bidPrice));
                 rgParams.put("type", "bid");
                 rgParams.put("price", String.format("%f", bidPrice));
-				Map<String, Object> bidResult = om.readValue(api.callApiPost("/trade/place", rgParams), Map.class);
-				if ("5600".equals(bidResult.get("status"))) {
+
+				try {
+					String bidResult = api.callApiPost("/trade/place", rgParams);
+					if (bidResult.contains("error : 429") || bidResult.contains("\"status\":\"5600\"")) {
+						cancelBid();
+					} else if (bidResult.contains("\"status\":\"0000\"")) {
+						System.out.println("bid: " + bidResult.substring(28, bidResult.length() -1).replaceAll("\"", ""));
+					} else {
+						System.out.println(bidResult);
+					}
+				} catch (Exception e) {
 					cancelBid();
-				} else if ("0000".equals(bidResult.get("status"))) {
-					System.out.println("bid: " + bidResult.get("order_id"));
-				} else {
-					System.out.println(bidResult);
+//					e.printStackTrace();
 				}
+
 
 				rgParams.put("units", String.format("%.4f", orderPrice / askPrice));
                 rgParams.put("type", "ask");
                 rgParams.put("price", String.format("%f", askPrice));
-                Map<String, Object> askResult = om.readValue(api.callApiPost("/trade/place", rgParams), Map.class);
-				if ("5600".equals(askResult.get("status"))) {
+
+				try {
+					String askResult = api.callApiPost("/trade/place", rgParams);
+					if (askResult.contains("error : 429") || askResult.contains("\"status\":\"5600\"")) {
+						cancelAsk();
+					} else if (askResult.contains("\"status\":\"0000\"")) {
+						System.out.println("ask: " + askResult.substring(28, askResult.length() -1).replaceAll("\"", ""));
+					} else {
+						System.out.println(askResult);
+					}
+				} catch (Exception e) {
 					cancelAsk();
-				} else if ("0000".equals(askResult.get("status"))) {
-					System.out.println("ask: " + askResult.get("order_id"));
-				} else {
-					System.out.println(askResult);
 				}
+
                 Thread.sleep(sleep);
             } catch (Exception e) {
 				errorCount++;
