@@ -154,16 +154,16 @@ public class Main {
 
 				try {
 					String bidResult = api.callApiPost("/trade/place", rgParams);
-					if (bidResult.contains("error : 429") || bidResult.contains("\"status\":\"5600\"")) {
+					if (bidResult.contains("error : 429") || bidResult.contains("5600")) {
 						cancelBid();
-					} else if (bidResult.contains("\"status\":\"0000\"")) {
+					} else if (bidResult.contains("0000")) {
 						System.out.println("bid: " + bidResult.substring(28, bidResult.length() -1).replaceAll("\"", ""));
 					} else {
 						System.out.println(bidResult);
 					}
 				} catch (Exception e) {
 					cancelBid();
-//					e.printStackTrace();
+					e.printStackTrace();
 				}
 
 
@@ -173,9 +173,9 @@ public class Main {
 
 				try {
 					String askResult = api.callApiPost("/trade/place", rgParams);
-					if (askResult.contains("error : 429") || askResult.contains("\"status\":\"5600\"")) {
+					if (askResult.contains("error : 429") || askResult.contains("5600")) {
 						cancelAsk();
-					} else if (askResult.contains("\"status\":\"0000\"")) {
+					} else if (askResult.contains("0000")) {
 						System.out.println("ask: " + askResult.substring(28, askResult.length() -1).replaceAll("\"", ""));
 					} else {
 						System.out.println(askResult);
@@ -206,18 +206,21 @@ public class Main {
         try {
             String result = api.callApiPost("/info/orders", rgParams);
             Map<String, Object> map = om.readValue(result, Map.class);
-            List<Map<String, String>> data = (List) map.get("data");
-            for (Map<String, String> ele : data) {
-                String orderId = ele.get("order_id");
-                String type = ele.get("type");
-				if (type.equals("ask")) {
-					continue;
+			List<Map<String, String>> data = (List) map.get("data");
+			if (data != null) {
+				for (Map<String, String> ele : data) {
+					String orderId = ele.get("order_id");
+					String type = ele.get("type");
+					if (type.equals("ask")) {
+						continue;
+					}
+					Thread.sleep(sleep);
+					rgParams.put("order_id", orderId);
+					rgParams.put("type", type);
+					api.callApiPost("/trade/cancel", rgParams);
+					System.out.println("cancel_bid: " + orderId);
 				}
-                rgParams.put("order_id", orderId);
-                rgParams.put("type", type);
-                api.callApiPost("/trade/cancel", rgParams);
-				System.out.println("cancel_bid: " + orderId);
-            }
+			}
         } catch (Exception e) {
             // ignore
         }
@@ -236,19 +239,22 @@ public class Main {
 			String result = api.callApiPost("/info/orders", rgParams);
 			Map<String, Object> map = om.readValue(result, Map.class);
 			List<Map<String, String>> data = (List) map.get("data");
-			for (Map<String, String> ele : data) {
-				String orderId = ele.get("order_id");
-				String type = ele.get("type");
-				if (type.equals("bid")) {
-					continue;
+			if (data != null) {
+				for (Map<String, String> ele : data) {
+					String orderId = ele.get("order_id");
+					String type = ele.get("type");
+					if (type.equals("bid")) {
+						continue;
+					}
+					Thread.sleep(sleep);
+					rgParams.put("order_id", orderId);
+					rgParams.put("type", type);
+					api.callApiPost("/trade/cancel", rgParams);
+					System.out.println("cancel_ask: " + orderId);
 				}
-				rgParams.put("order_id", orderId);
-				rgParams.put("type", type);
-				api.callApiPost("/trade/cancel", rgParams);
-				System.out.println("cancel_ask: " + orderId);
 			}
 		} catch (Exception e) {
-			// ignore
+			e.printStackTrace();
 		}
 	}
 
@@ -274,7 +280,7 @@ public class Main {
 				System.out.println("cancel_order: " + orderId);
 			}
 		} catch (Exception e) {
-			// ignore
+			e.printStackTrace();
 		}
 	}
 }
