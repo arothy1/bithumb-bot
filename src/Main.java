@@ -38,7 +38,7 @@ public class Main {
 		System.out.println("[secretKey]를 입력하세요(엔터)");
 		secretKey = new Scanner(System.in).nextLine();
 		System.out.println("가속화 하시겠습니까?(y/N)(2개 이상 계정 운영하면 N)");
-		acceleration = new Scanner(System.in).nextLine().equals("y") ? 2 : 1;
+		acceleration = new Scanner(System.in).nextLine().equalsIgnoreCase("y") ? 2 : 1;
 
 		setSleep();
         order();
