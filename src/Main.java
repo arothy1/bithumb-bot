@@ -34,9 +34,9 @@ public class Main {
 		System.out.printf("%s 사용자님 안녕하세요%n", connectKey);
 		System.out.println("[secretKey]를 입력하세요(엔터)");
 		secretKey = new Scanner(System.in).nextLine();
-		System.out.println("주문할 코인을 입력하세요(엔터)");
+		System.out.println("주문할 코인을 입력하세요(ex: btc)(엔터)");
 		coin = new Scanner(System.in).nextLine().toUpperCase();
-		System.out.println("한번에 주문할 수량을 입력하세요(100,000원 시드일 경우 20000 입력)");
+		System.out.println("한번에 주문할 원화가치를 입력하세요(시드가 10만원 일 경우 20000 이 적당합니다.)");
 		orderPrice = Integer.parseInt(new Scanner(System.in).nextLine());
 
 		setSleep();
