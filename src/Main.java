@@ -17,7 +17,6 @@ public class Main {
 	static String connectKey;
 	static String secretKey;
 	static String coin;
-	static int acceleration = 1;
     static ObjectMapper om = new ObjectMapper();
 
     public static void main(String args[]) throws IOException, InterruptedException {
@@ -37,31 +36,10 @@ public class Main {
 		System.out.printf("%s 사용자님 안녕하세요%n", connectKey);
 		System.out.println("[secretKey]를 입력하세요(엔터)");
 		secretKey = new Scanner(System.in).nextLine();
-		System.out.println("가속화 하시겠습니까?(y/N)(2개 이상 계정 운영하면 N)");
-		acceleration = new Scanner(System.in).nextLine().equalsIgnoreCase("y") ? 2 : 1;
 
-		setSleep();
         order();
 
     }
-
-	private static void setSleep() throws IOException {
-		URL url = new URL("https://raw.githubusercontent.com/arothy1/B_setting/master/sleep");
-		HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-
-		connection.setRequestMethod("GET");
-		connection.setUseCaches(false);
-
-		BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8));
-		StringBuilder stringBuilder = new StringBuilder();
-		String inputLine;
-
-		while ((inputLine = bufferedReader.readLine()) != null)  {
-			stringBuilder.append(inputLine);
-		}
-		bufferedReader.close();
-		sleep = Integer.parseInt(stringBuilder.toString()) / acceleration;
-	}
 
 	private static String getMembers() throws IOException {
 		StringBuilder members = new StringBuilder();
@@ -131,14 +109,25 @@ public class Main {
         rgParamsOrderbook.put("count", "2");
 
 		int count = 0;
+		int successCount = 0;
+		int errorCount = 0;
 		while (true) {
 			if (count % 300 == 0) {
-				setSleep();
 				if (Objects.equals("1", getMaintenanceStatus())) {
 					return;
 				}
 			}
             try {
+				if (successCount > 1000) {
+					sleep = sleep - 50;
+					successCount = 0;
+				}
+
+				if (errorCount > 10) {
+					sleep = sleep + 50;
+					errorCount = 0;
+				}
+
                 String result = api.callApiGet("/public/orderbook/BTC_KRW", rgParamsOrderbook);
                 Map<String, Object> map = om.readValue(result, Map.class);
                 Map<String, Object> data = (Map) map.get("data");
@@ -182,10 +171,10 @@ public class Main {
 				}
                 Thread.sleep(sleep);
             } catch (Exception e) {
-				cancelOrder();
+				errorCount++;
 				e.printStackTrace();
             } finally {
-				count++;
+				successCount++;
 			}
         }
     }
