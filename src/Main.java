@@ -11,7 +11,7 @@ import org.codehaus.jackson.map.ObjectMapper;
 public class Main {
 
 	static int orderPrice = 50000;
-	static int sleep = 2000;
+	static int sleep = 500;
 	static String connectKey;
 	static String secretKey;
 	static String coin;
