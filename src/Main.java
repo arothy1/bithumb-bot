@@ -153,11 +153,11 @@ public class Main {
                 rgParams.put("price", String.format("%d", bidPrice));
 
 				try {
-					String bidResult = om.readValue(api.callApiPost("/trade/place", rgParams), String.class);
-					if (bidResult.contains("\"status\":\"5600\"")) {
+					String bidResult = api.callApiPost("/trade/place", rgParams);
+					if (bidResult.contains("error : 429") || bidResult.contains("\"status\":\"5600\"")) {
 						cancelBid();
 					} else if (bidResult.contains("\"status\":\"0000\"")) {
-						System.out.println("bid: " + bidResult.substring(18, bidResult.length() -1));
+						System.out.println("bid: " + bidResult.substring(28, bidResult.length() -1).replaceAll("\"", ""));
 					} else {
 						System.out.println(bidResult);
 					}
@@ -172,11 +172,11 @@ public class Main {
                 rgParams.put("price", String.format("%d", askPrice));
 
 				try {
-					String askResult = om.readValue(api.callApiPost("/trade/place", rgParams), String.class);
-					if (askResult.contains("\"status\":\"5600\"")) {
+					String askResult = api.callApiPost("/trade/place", rgParams);
+					if (askResult.contains("error : 429") || askResult.contains("\"status\":\"5600\"")) {
 						cancelAsk();
 					} else if (askResult.contains("\"status\":\"0000\"")) {
-						System.out.println("ask: " + askResult.substring(18, askResult.length() -1));
+						System.out.println("ask: " + askResult.substring(28, askResult.length() -1).replaceAll("\"", ""));
 					} else {
 						System.out.println(askResult);
 					}
