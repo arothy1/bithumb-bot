@@ -118,12 +118,14 @@ public class Main {
 				}
 			}
             try {
-				if (successCount > 1000) {
+				if (successCount > 500) {
+					System.out.printf("set delay %,d -> %,d%n", sleep, sleep - 50);
 					sleep = sleep - 50;
 					successCount = 0;
 				}
 
 				if (errorCount > 10) {
+					System.out.printf("set delay %,d -> %,d%n", sleep, sleep + 50);
 					sleep = sleep + 50;
 					errorCount = 0;
 				}
@@ -174,6 +176,7 @@ public class Main {
 				errorCount++;
 				e.printStackTrace();
             } finally {
+				count++;
 				successCount++;
 			}
         }
