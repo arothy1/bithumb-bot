@@ -16,6 +16,7 @@ public class Main {
 	static String secretKey;
 	static String coin;
     static ObjectMapper om = new ObjectMapper();
+	static Api_Client api;
 
     public static void main(String args[]) throws IOException, InterruptedException {
 
@@ -38,6 +39,8 @@ public class Main {
 		coin = new Scanner(System.in).nextLine().toUpperCase();
 		System.out.println("한번에 주문할 원화가치를 입력하세요(시드가 10만원 일 경우 20000 이 적당합니다.)");
 		orderPrice = Integer.parseInt(new Scanner(System.in).nextLine());
+
+		api = new Api_Client(connectKey, secretKey);
 
         order();
     }
@@ -103,11 +106,7 @@ public class Main {
 	}
 
     private static void order() throws IOException {
-        Api_Client api = new Api_Client(connectKey,
-            secretKey);
 
-        HashMap<String, String> rgParamsOrderbook = new HashMap();
-        rgParamsOrderbook.put("count", "2");
 
 		int count = 0;
 		int successCount = 0;
@@ -130,61 +129,12 @@ public class Main {
 					sleep = sleep + 50;
 					errorCount = 0;
 				}
-                String result = api.callApiGet(String.format("/public/orderbook/%s_KRW", coin), rgParamsOrderbook);
-                Map<String, Object> map = om.readValue(result, Map.class);
-                Map<String, Object> data = (Map) map.get("data");
-                List<Map<String, String>> bids = (List) data.get("bids");
-                List<Map<String, String>> asks = (List) data.get("asks");
-                Double bidPrice = Double.parseDouble(bids.get(0).get("price")) + TickSize.getSize(Double.parseDouble(bids.get(0).get("price")));
-                Double askPrice = Double.parseDouble(asks.get(0).get("price")) - TickSize.getSize(Double.parseDouble(bids.get(0).get("price")));
 
-				if (bidPrice == Double.parseDouble(asks.get(0).get("price"))) {
-					bidPrice = Double.parseDouble(bids.get(0).get("price"));
-				}
-				if (askPrice == Double.parseDouble(bids.get(0).get("price"))) {
-					askPrice = Double.parseDouble(asks.get(0).get("price"));
-				}
-
-                HashMap<String, String> rgParams = new HashMap();
-                rgParams.put("order_currency", coin);
-                rgParams.put("payment_currency", "KRW");
-                rgParams.put("units", String.format("%.4f", orderPrice / bidPrice));
-                rgParams.put("type", "bid");
-                rgParams.put("price", String.format("%f", bidPrice));
-
-				try {
-					String bidResult = api.callApiPost("/trade/place", rgParams);
-					if (bidResult.contains("error : 429") || bidResult.contains("5600")) {
-						cancelBid();
-					} else if (bidResult.contains("0000")) {
-						System.out.println("bid: " + bidResult.substring(28, bidResult.length() -1).replaceAll("\"", ""));
-					} else {
-						System.out.println(bidResult);
-					}
-				} catch (Exception e) {
-					cancelBid();
-					e.printStackTrace();
-				}
-
-
-				rgParams.put("units", String.format("%.4f", orderPrice / askPrice));
-                rgParams.put("type", "ask");
-                rgParams.put("price", String.format("%f", askPrice));
-
-				try {
-					String askResult = api.callApiPost("/trade/place", rgParams);
-					if (askResult.contains("error : 429") || askResult.contains("5600")) {
-						cancelAsk();
-					} else if (askResult.contains("0000")) {
-						System.out.println("ask: " + askResult.substring(28, askResult.length() -1).replaceAll("\"", ""));
-					} else {
-						System.out.println(askResult);
-					}
-				} catch (Exception e) {
-					cancelAsk();
-				}
-
+				bid();
                 Thread.sleep(sleep);
+				ask();
+                Thread.sleep(sleep);
+
             } catch (Exception e) {
 				errorCount++;
 				e.printStackTrace();
@@ -195,7 +145,88 @@ public class Main {
         }
     }
 
-    private static void cancelBid() {
+	private static void ask() throws IOException {
+		HashMap<String, String> rgParamsOrderbook = new HashMap();
+		rgParamsOrderbook.put("count", "2");
+		String result = api.callApiGet("/public/orderbook/BTC_KRW", rgParamsOrderbook);
+		Map<String, Object> map = om.readValue(result, Map.class);
+		Map<String, Object> data = (Map) map.get("data");
+		List<Map<String, String>> bids = (List) data.get("bids");
+		List<Map<String, String>> asks = (List) data.get("asks");
+		Double askPrice = Double.parseDouble(asks.get(0).get("price")) - TickSize.getSize(Double.parseDouble(bids.get(0).get("price")));
+
+		if (askPrice == Double.parseDouble(bids.get(0).get("price"))) {
+			askPrice = Double.parseDouble(asks.get(0).get("price"));
+		}
+
+		HashMap<String, String> rgParams = new HashMap();
+		rgParams.put("order_currency", coin);
+		rgParams.put("payment_currency", "KRW");
+		rgParams.put("units", String.format("%.4f", orderPrice / askPrice));
+		rgParams.put("type", "ask");
+		rgParams.put("price", String.format("%d", askPrice));
+
+		try {
+			String bidResult = api.callApiPost("/trade/place", rgParams);
+			if (bidResult.contains("error : 429")) {
+				System.out.printf("set delay %,d -> %,d%n", sleep, sleep + 50);
+				sleep = sleep + 50;
+			} else if (bidResult.contains("5600")) {
+				cancelAsk();
+			} else if (bidResult.contains("0000")) {
+				System.out.println("ask: " + bidResult.substring(28, bidResult.length() -1).replaceAll("\"", ""));
+			} else {
+				System.out.println(bidResult);
+			}
+		} catch (Exception e) {
+			System.out.printf("set delay %,d -> %,d%n", sleep, sleep + 50);
+			sleep = sleep + 50;
+			cancelAsk();
+		}
+	}
+
+	private static void bid() throws IOException {
+
+		HashMap<String, String> rgParamsOrderbook = new HashMap();
+		rgParamsOrderbook.put("count", "2");
+		String result = api.callApiGet("/public/orderbook/BTC_KRW", rgParamsOrderbook);
+		Map<String, Object> map = om.readValue(result, Map.class);
+		Map<String, Object> data = (Map) map.get("data");
+		List<Map<String, String>> bids = (List) data.get("bids");
+		List<Map<String, String>> asks = (List) data.get("asks");
+		Double bidPrice = Double.parseDouble(bids.get(0).get("price")) + TickSize.getSize(Double.parseDouble(bids.get(0).get("price")));
+
+		if (bidPrice == Double.parseDouble(asks.get(0).get("price"))) {
+			bidPrice = Double.parseDouble(bids.get(0).get("price"));
+		}
+
+		HashMap<String, String> rgParams = new HashMap();
+		rgParams.put("order_currency", coin);
+		rgParams.put("payment_currency", "KRW");
+		rgParams.put("units", String.format("%.4f", orderPrice / bidPrice));
+		rgParams.put("type", "bid");
+		rgParams.put("price", String.format("%f", bidPrice));
+
+		try {
+			String bidResult = api.callApiPost("/trade/place", rgParams);
+			if (bidResult.contains("error : 429")) {
+				System.out.printf("set delay %,d -> %,d%n", sleep, sleep + 50);
+				sleep = sleep + 50;
+			} else if (bidResult.contains("5600")) {
+				cancelBid();
+			} else if (bidResult.contains("0000")) {
+				System.out.println("bid: " + bidResult.substring(28, bidResult.length() -1).replaceAll("\"", ""));
+			} else {
+				System.out.println(bidResult);
+			}
+		} catch (Exception e) {
+			System.out.printf("set delay %,d -> %,d%n", sleep, sleep + 50);
+			sleep = sleep + 50;
+			cancelBid();
+		}
+	}
+
+	private static void cancelBid() {
         Api_Client api = new Api_Client(connectKey,
             secretKey);
 
