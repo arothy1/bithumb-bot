@@ -129,9 +129,9 @@ public class Main {
 					errorCount = 0;
 				}
 
-				bid();
+				bid(count);
                 Thread.sleep(sleep);
-				ask();
+				ask(count);
                 Thread.sleep(sleep);
 
 				successCount++;
@@ -144,7 +144,7 @@ public class Main {
         }
     }
 
-	private static void ask() throws IOException {
+	private static void ask(int count) throws IOException {
 		HashMap<String, String> rgParamsOrderbook = new HashMap();
 		rgParamsOrderbook.put("count", "2");
 		String result = api.callApiGet("/public/orderbook/BTC_KRW", rgParamsOrderbook);
@@ -171,7 +171,7 @@ public class Main {
 				System.out.printf("set delay %,d -> %,d%n", sleep, sleep + 50);
 				sleep = sleep + 50;
 			} else if (bidResult.contains("5600")) {
-				cancelAsk();
+				cancelAsk(count);
 			} else if (bidResult.contains("0000")) {
 				System.out.println("ask: " + bidResult.substring(28, bidResult.length() -1).replaceAll("\"", ""));
 			} else {
@@ -180,11 +180,11 @@ public class Main {
 		} catch (Exception e) {
 			System.out.printf("set delay %,d -> %,d%n", sleep, sleep + 50);
 			sleep = sleep + 50;
-			cancelAsk();
+			cancelAsk(count);
 		}
 	}
 
-	private static void bid() throws IOException {
+	private static void bid(int count) throws IOException {
 
 		HashMap<String, String> rgParamsOrderbook = new HashMap();
 		rgParamsOrderbook.put("count", "2");
@@ -212,7 +212,7 @@ public class Main {
 				System.out.printf("set delay %,d -> %,d%n", sleep, sleep + 50);
 				sleep = sleep + 50;
 			} else if (bidResult.contains("5600")) {
-				cancelBid();
+				cancelBid(count);
 			} else if (bidResult.contains("0000")) {
 				System.out.println("bid: " + bidResult.substring(28, bidResult.length() -1).replaceAll("\"", ""));
 			} else {
@@ -221,11 +221,14 @@ public class Main {
 		} catch (Exception e) {
 			System.out.printf("set delay %,d -> %,d%n", sleep, sleep + 50);
 			sleep = sleep + 50;
-			cancelBid();
+			cancelBid(count);
 		}
 	}
 
-	private static void cancelBid() {
+	private static void cancelBid(int count) {
+		if (count % 3 == 0) {
+			return;
+		}
         Api_Client api = new Api_Client(connectKey,
             secretKey);
 
@@ -256,7 +259,10 @@ public class Main {
         }
     }
 
-	private static void cancelAsk() {
+	private static void cancelAsk(int count) {
+		if (count % 3 == 0) {
+			return;
+		}
 
 		Api_Client api = new Api_Client(connectKey,
 			secretKey);
