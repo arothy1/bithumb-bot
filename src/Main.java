@@ -135,12 +135,12 @@ public class Main {
 				ask();
                 Thread.sleep(sleep);
 
+				successCount++;
             } catch (Exception e) {
 				errorCount++;
 				e.printStackTrace();
             } finally {
 				count++;
-				successCount++;
 			}
         }
     }
