@@ -10,9 +10,7 @@ import org.codehaus.jackson.map.ObjectMapper;
 
 public class Main {
 
-    static final int MINIMUM_TICK = 1000;
-    static final String BID_AMOUNT = "0.0005";
-    static final String ASK_AMOUNT = "0.0005";
+	static int orderPrice = 50000;
 	static int sleep = 500;
 	static String connectKey;
 	static String secretKey;
@@ -37,11 +35,14 @@ public class Main {
 		System.out.printf("%s 사용자님 안녕하세요%n", connectKey);
 		System.out.println("[secretKey]를 입력하세요(엔터)");
 		secretKey = new Scanner(System.in).nextLine();
+		System.out.println("주문할 코인을 입력하세요(ex: btc)(엔터)");
+		coin = new Scanner(System.in).nextLine().toUpperCase();
+		System.out.println("한번에 주문할 원화가치를 입력하세요(시드가 10만원 일 경우 20000 이 적당합니다.)");
+		orderPrice = Integer.parseInt(new Scanner(System.in).nextLine());
 
 		api = new Api_Client(connectKey, secretKey);
 
         order();
-
     }
 
 	private static String getMembers() throws IOException {
@@ -129,10 +130,17 @@ public class Main {
 					errorCount = 0;
 				}
 
-				bid(count);
-                Thread.sleep(sleep);
-				ask(count);
-                Thread.sleep(sleep);
+				if (count % 2 == 0) {
+					bid(count);
+					Thread.sleep(sleep);
+					ask(count);
+					Thread.sleep(sleep);
+				} else {
+					ask(count);
+					Thread.sleep(sleep);
+					bid(count);
+					Thread.sleep(sleep);
+				}
 
 				successCount++;
             } catch (Exception e) {
@@ -147,23 +155,23 @@ public class Main {
 	private static void ask(int count) throws IOException {
 		HashMap<String, String> rgParamsOrderbook = new HashMap();
 		rgParamsOrderbook.put("count", "2");
-		String result = api.callApiGet("/public/orderbook/BTC_KRW", rgParamsOrderbook);
+		String result = api.callApiGet(String.format("/public/orderbook/%s_KRW", coin), rgParamsOrderbook);
 		Map<String, Object> map = om.readValue(result, Map.class);
 		Map<String, Object> data = (Map) map.get("data");
 		List<Map<String, String>> bids = (List) data.get("bids");
 		List<Map<String, String>> asks = (List) data.get("asks");
-		Integer askPrice = Integer.parseInt(asks.get(0).get("price")) - MINIMUM_TICK;
+		Double askPrice = Double.parseDouble(asks.get(0).get("price")) - TickSize.getSize(Double.parseDouble(bids.get(0).get("price")));
 
-		if (askPrice == Integer.parseInt(bids.get(0).get("price"))) {
-			askPrice = Integer.parseInt(asks.get(0).get("price"));
+		if (askPrice == Double.parseDouble(bids.get(0).get("price"))) {
+			askPrice = Double.parseDouble(asks.get(0).get("price"));
 		}
 
 		HashMap<String, String> rgParams = new HashMap();
-		rgParams.put("order_currency", "BTC");
+		rgParams.put("order_currency", coin);
 		rgParams.put("payment_currency", "KRW");
-		rgParams.put("units", ASK_AMOUNT);
+		rgParams.put("units", String.format("%.4f", orderPrice / askPrice));
 		rgParams.put("type", "ask");
-		rgParams.put("price", String.format("%d", askPrice));
+		rgParams.put("price", String.format("%f", askPrice));
 
 		try {
 			String bidResult = api.callApiPost("/trade/place", rgParams);
@@ -188,23 +196,23 @@ public class Main {
 
 		HashMap<String, String> rgParamsOrderbook = new HashMap();
 		rgParamsOrderbook.put("count", "2");
-		String result = api.callApiGet("/public/orderbook/BTC_KRW", rgParamsOrderbook);
+		String result = api.callApiGet(String.format("/public/orderbook/%s_KRW", coin), rgParamsOrderbook);
 		Map<String, Object> map = om.readValue(result, Map.class);
 		Map<String, Object> data = (Map) map.get("data");
 		List<Map<String, String>> bids = (List) data.get("bids");
 		List<Map<String, String>> asks = (List) data.get("asks");
-		Integer bidPrice = Integer.parseInt(bids.get(0).get("price")) + MINIMUM_TICK;
+		Double bidPrice = Double.parseDouble(bids.get(0).get("price")) + TickSize.getSize(Double.parseDouble(bids.get(0).get("price")));
 
-		if (bidPrice == Integer.parseInt(asks.get(0).get("price"))) {
-			bidPrice = Integer.parseInt(bids.get(0).get("price"));
+		if (bidPrice == Double.parseDouble(asks.get(0).get("price"))) {
+			bidPrice = Double.parseDouble(bids.get(0).get("price"));
 		}
 
 		HashMap<String, String> rgParams = new HashMap();
-		rgParams.put("order_currency", "BTC");
+		rgParams.put("order_currency", coin);
 		rgParams.put("payment_currency", "KRW");
-		rgParams.put("units", BID_AMOUNT);
+		rgParams.put("units", String.format("%.4f", orderPrice / bidPrice));
 		rgParams.put("type", "bid");
-		rgParams.put("price", String.format("%d", bidPrice));
+		rgParams.put("price", String.format("%f", bidPrice));
 
 		try {
 			String bidResult = api.callApiPost("/trade/place", rgParams);
@@ -233,7 +241,7 @@ public class Main {
             secretKey);
 
         HashMap<String, String> rgParams = new HashMap();
-        rgParams.put("order_currency", "BTC");
+        rgParams.put("order_currency", coin);
         rgParams.put("payment_currency", "KRW");
 
         try {
@@ -268,7 +276,7 @@ public class Main {
 			secretKey);
 
 		HashMap<String, String> rgParams = new HashMap();
-		rgParams.put("order_currency", "BTC");
+		rgParams.put("order_currency", coin);
 		rgParams.put("payment_currency", "KRW");
 
 		try {
@@ -300,7 +308,7 @@ public class Main {
 			secretKey);
 
 		HashMap<String, String> rgParams = new HashMap();
-		rgParams.put("order_currency", "BTC");
+		rgParams.put("order_currency", coin);
 		rgParams.put("payment_currency", "KRW");
 
 		try {
