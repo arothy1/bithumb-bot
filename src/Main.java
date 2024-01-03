@@ -10,16 +10,18 @@ import org.codehaus.jackson.map.ObjectMapper;
 
 public class Main {
 
-	static int orderPrice = 50000;
+	static int orderPrice = 33000;
 	static int sleep = 500;
 	static String connectKey;
 	static String secretKey;
-	static String coin;
+	static String coin = "btc";
     static ObjectMapper om = new ObjectMapper();
 	static Api_Client api;
+	static Random random = new Random();
 
     public static void main(String args[]) throws IOException, InterruptedException {
 
+		int ranInt = random.nextInt();
 		getNotice();
 		if (Objects.equals("1", getMaintenanceStatus())) {
 			return;
@@ -35,10 +37,10 @@ public class Main {
 		System.out.printf("%s 사용자님 안녕하세요%n", connectKey);
 		System.out.println("[secretKey]를 입력하세요(엔터)");
 		secretKey = new Scanner(System.in).nextLine();
-		System.out.println("주문할 코인을 입력하세요(ex: btc)(엔터)");
-		coin = new Scanner(System.in).nextLine().toUpperCase();
-		System.out.println("한번에 주문할 원화가치를 입력하세요(시드가 10만원 일 경우 20000 이 적당합니다.)");
-		orderPrice = Integer.parseInt(new Scanner(System.in).nextLine());
+//		System.out.println("주문할 코인을 입력하세요(ex: btc)(엔터)");
+//		coin = new Scanner(System.in).nextLine().toUpperCase();
+//		System.out.println("한번에 주문할 원화가치를 입력하세요(시드가 10만원 일 경우 20000 이 적당합니다.)");
+//		orderPrice = Integer.parseInt(new Scanner(System.in).nextLine());
 
 		api = new Api_Client(connectKey, secretKey);
 
@@ -118,25 +120,23 @@ public class Main {
 				}
 			}
             try {
-				if (successCount > 500) {
-					System.out.printf("set delay %,d -> %,d%n", sleep, sleep - 50);
-					sleep = sleep - 50;
+				if (successCount > 100) {
+					decreaseSleep();
 					successCount = 0;
 				}
 
 				if (errorCount > 10) {
-					System.out.printf("set delay %,d -> %,d%n", sleep, sleep + 50);
-					sleep = sleep + 50;
+					increaseSleep();
 					errorCount = 0;
 				}
 
-				if (count % 2 == 0) {
+				if (Math.abs(random.nextInt()) % 2 == 0) {
 					bid(count);
 					Thread.sleep(sleep);
-					ask(count);
+					ask();
 					Thread.sleep(sleep);
 				} else {
-					ask(count);
+					ask();
 					Thread.sleep(sleep);
 					bid(count);
 					Thread.sleep(sleep);
@@ -152,7 +152,7 @@ public class Main {
         }
     }
 
-	private static void ask(int count) throws IOException {
+	private static void ask() throws IOException {
 		HashMap<String, String> rgParamsOrderbook = new HashMap();
 		rgParamsOrderbook.put("count", "2");
 		String result = api.callApiGet(String.format("/public/orderbook/%s_KRW", coin), rgParamsOrderbook);
@@ -176,19 +176,17 @@ public class Main {
 		try {
 			String bidResult = api.callApiPost("/trade/place", rgParams);
 			if (bidResult.contains("error : 429")) {
-				System.out.printf("set delay %,d -> %,d%n", sleep, sleep + 50);
-				sleep = sleep + 50;
+				increaseSleep();
 			} else if (bidResult.contains("5600")) {
-				cancelAsk(count);
+				cancelAsk();
 			} else if (bidResult.contains("0000")) {
 				System.out.println("ask: " + bidResult.substring(28, bidResult.length() -1).replaceAll("\"", ""));
 			} else {
 				System.out.println(bidResult);
 			}
 		} catch (Exception e) {
-			System.out.printf("set delay %,d -> %,d%n", sleep, sleep + 50);
-			sleep = sleep + 50;
-			cancelAsk(count);
+			increaseSleep();
+			cancelAsk();
 		}
 	}
 
@@ -217,24 +215,22 @@ public class Main {
 		try {
 			String bidResult = api.callApiPost("/trade/place", rgParams);
 			if (bidResult.contains("error : 429")) {
-				System.out.printf("set delay %,d -> %,d%n", sleep, sleep + 50);
-				sleep = sleep + 50;
+				increaseSleep();
 			} else if (bidResult.contains("5600")) {
-				cancelBid(count);
+				cancelBid();
 			} else if (bidResult.contains("0000")) {
 				System.out.println("bid: " + bidResult.substring(28, bidResult.length() -1).replaceAll("\"", ""));
 			} else {
 				System.out.println(bidResult);
 			}
 		} catch (Exception e) {
-			System.out.printf("set delay %,d -> %,d%n", sleep, sleep + 50);
-			sleep = sleep + 50;
-			cancelBid(count);
+			increaseSleep();
+			cancelBid();
 		}
 	}
 
-	private static void cancelBid(int count) {
-		if (count % 3 == 0) {
+	private static void cancelBid() {
+		if (Math.abs(random.nextInt()) % 3 == 0) {
 			return;
 		}
         Api_Client api = new Api_Client(connectKey,
@@ -263,12 +259,13 @@ public class Main {
 				}
 			}
         } catch (Exception e) {
+			e.printStackTrace();
             // ignore
         }
     }
 
-	private static void cancelAsk(int count) {
-		if (count % 3 == 0) {
+	private static void cancelAsk() {
+		if (Math.abs(random.nextInt()) % 2 == 0) {
 			return;
 		}
 
@@ -302,30 +299,17 @@ public class Main {
 		}
 	}
 
-	private static void cancelOrder() {
-
-		Api_Client api = new Api_Client(connectKey,
-			secretKey);
-
-		HashMap<String, String> rgParams = new HashMap();
-		rgParams.put("order_currency", coin);
-		rgParams.put("payment_currency", "KRW");
-
-		try {
-			String result = api.callApiPost("/info/orders", rgParams);
-			Map<String, Object> map = om.readValue(result, Map.class);
-			List<Map<String, String>> data = (List) map.get("data");
-			for (Map<String, String> ele : data) {
-				String orderId = ele.get("order_id");
-				String type = ele.get("type");
-				rgParams.put("order_id", orderId);
-				rgParams.put("type", type);
-				api.callApiPost("/trade/cancel", rgParams);
-				System.out.println("cancel_order: " + orderId);
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+	private static void increaseSleep() {
+		System.out.printf("set delay %,d -> %,d%n", sleep, sleep + 50);
+		sleep = sleep + 50;
 	}
+
+	private static void decreaseSleep() {
+		System.out.printf("set delay %,d -> %,d%n", sleep, sleep - 50);
+		sleep = sleep - 50;
+	}
+
+
+
 }
 
