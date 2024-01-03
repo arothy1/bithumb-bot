@@ -10,7 +10,7 @@ import org.codehaus.jackson.map.ObjectMapper;
 
 public class Main {
 
-	static int orderPrice = 100000;
+	static int orderPrice = 30000;
 	static int sleep = 500;
 	static String connectKey;
 	static String secretKey;
@@ -38,8 +38,13 @@ public class Main {
 		secretKey = new Scanner(System.in).nextLine();
 //		System.out.println("주문할 코인을 입력하세요(ex: btc)(엔터)");
 //		coin = new Scanner(System.in).nextLine().toUpperCase();
-//		System.out.println("한번에 주문할 원화가치를 입력하세요(시드가 10만원 일 경우 20000 이 적당합니다.)");
-//		orderPrice = Integer.parseInt(new Scanner(System.in).nextLine());
+		try {
+			System.out.println("한번에 주문할 원화가치를 입력하세요(시드가 10만원 일 경우 20000 이 적당합니다.)");
+			orderPrice = Integer.parseInt(new Scanner(System.in).nextLine());
+		} catch (Exception e) {
+			System.out.println("잘못된 입력으로 기본 세팅으로 진행됩니다." + orderPrice);
+		}
+
 
 		api = new Api_Client(connectKey, secretKey);
 
