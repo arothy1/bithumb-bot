@@ -10,7 +10,7 @@ import org.codehaus.jackson.map.ObjectMapper;
 
 public class Main {
 
-	static int orderPrice = 33000;
+	static int orderPrice = 50000;
 	static int sleep = 500;
 	static String connectKey;
 	static String secretKey;
@@ -21,7 +21,6 @@ public class Main {
 
     public static void main(String args[]) throws IOException, InterruptedException {
 
-		int ranInt = random.nextInt();
 		getNotice();
 		if (Objects.equals("1", getMaintenanceStatus())) {
 			return;
