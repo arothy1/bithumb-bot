@@ -130,10 +130,17 @@ public class Main {
 					errorCount = 0;
 				}
 
-				bid();
-                Thread.sleep(sleep);
-				ask();
-                Thread.sleep(sleep);
+				if (count % 2 == 0) {
+					bid();
+					Thread.sleep(sleep);
+					ask();
+					Thread.sleep(sleep);
+				} else {
+					ask();
+					Thread.sleep(sleep);
+					bid();
+					Thread.sleep(sleep);
+				}
 
 				successCount++;
             } catch (Exception e) {
@@ -148,7 +155,7 @@ public class Main {
 	private static void ask() throws IOException {
 		HashMap<String, String> rgParamsOrderbook = new HashMap();
 		rgParamsOrderbook.put("count", "2");
-		String result = api.callApiGet("/public/orderbook/BTC_KRW", rgParamsOrderbook);
+		String result = api.callApiGet(String.format("/public/orderbook/%s_KRW", coin), rgParamsOrderbook);
 		Map<String, Object> map = om.readValue(result, Map.class);
 		Map<String, Object> data = (Map) map.get("data");
 		List<Map<String, String>> bids = (List) data.get("bids");
@@ -164,7 +171,7 @@ public class Main {
 		rgParams.put("payment_currency", "KRW");
 		rgParams.put("units", String.format("%.4f", orderPrice / askPrice));
 		rgParams.put("type", "ask");
-		rgParams.put("price", String.format("%d", askPrice));
+		rgParams.put("price", String.format("%f", askPrice));
 
 		try {
 			String bidResult = api.callApiPost("/trade/place", rgParams);
@@ -189,7 +196,7 @@ public class Main {
 
 		HashMap<String, String> rgParamsOrderbook = new HashMap();
 		rgParamsOrderbook.put("count", "2");
-		String result = api.callApiGet("/public/orderbook/BTC_KRW", rgParamsOrderbook);
+		String result = api.callApiGet(String.format("/public/orderbook/%s_KRW", coin), rgParamsOrderbook);
 		Map<String, Object> map = om.readValue(result, Map.class);
 		Map<String, Object> data = (Map) map.get("data");
 		List<Map<String, String>> bids = (List) data.get("bids");
