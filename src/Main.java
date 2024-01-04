@@ -10,57 +10,89 @@ import org.codehaus.jackson.map.ObjectMapper;
 
 public class Main {
 
-	static int orderPrice = 30000;
 	static int sleep = 500;
-	static String connectKey;
-	static String secretKey;
 	static String coin = "btc";
     static ObjectMapper om = new ObjectMapper();
-	static Api_Client api;
+	static Api_Client globalApi;
+	static Api_Client globalApi2;
 	static Random random = new Random();
 
     public static void main(String args[]) throws IOException, InterruptedException {
 
-		getNotice();
+		printNotice();
 		if (Objects.equals("1", getMaintenanceStatus())) {
 			return;
 		}
 
-		System.out.println("1번계정의 [connectKey]를 입력하세요(엔터)");
-		String connectKey1 = new Scanner(System.in).nextLine();
-		if (!getMembers().contains(connectKey1)) {
-			System.out.printf("[%s]은 사용할 수 없습니다. 관리자에게 문의하세요.%n", connectKey1);
-			Thread.sleep(3000);
+		if (!setting() || !setting2()) {
 			return;
 		}
-		System.out.println("1번계정의 [secretKey]를 입력하세요(엔터)");
-		String secretKey1 = new Scanner(System.in).nextLine();
+		setCoin();
+        order();
 
-		System.out.println("2번계정의 [connectKey]를 입력하세요(엔터)");
-		String connectKey2 = new Scanner(System.in).nextLine();
-		if (!getMembers().contains(connectKey2)) {
-			System.out.printf("[%s]은 사용할 수 없습니다. 관리자에게 문의하세요.%n", connectKey2);
-			Thread.sleep(3000);
-			return;
-		}
-		System.out.println("2번계정의 [secretKey]를 입력하세요(엔터)");
-		String secretKey2 = new Scanner(System.in).nextLine();
+    }
 
-		connectKey = connectKey1 + "|" + connectKey2;
-		secretKey = secretKey1 + "|" + secretKey2;
-
+	private static void setCoin() {
 //		System.out.println("주문할 코인을 입력하세요(ex: btc)(엔터)");
 //		coin = new Scanner(System.in).nextLine().toUpperCase();
+	}
+
+	private static boolean setting() throws IOException, InterruptedException {
+		String connectKey;
+		String secretKey;
+		Integer orderPrice = 30000;
+		System.out.println("1번계정의 [connectKey]를 입력하세요(엔터)");
+		connectKey = new Scanner(System.in).nextLine();
+		if (!getMembers().contains(connectKey)) {
+			System.out.printf("[%s]은 사용할 수 없습니다. 관리자에게 문의하세요.%n", connectKey);
+			Thread.sleep(3000);
+			return false;
+		}
+		System.out.println("1번계정의 [secretKey]를 입력하세요(엔터)");
+		secretKey = new Scanner(System.in).nextLine();
+
 		try {
-			System.out.println("한번에 주문할 원화가치를 입력하세요(시드가 10만원 일 경우 20000 이 적당합니다.)");
+			System.out.println("1번계정의 주문금액을 입력하세요. (시드가 10만원 일 경우 20000 이 적당합니다.)");
 			orderPrice = Integer.parseInt(new Scanner(System.in).nextLine());
 		} catch (Exception e) {
 			System.out.println("잘못된 입력으로 기본 세팅으로 진행됩니다." + orderPrice);
 		}
 
+		globalApi = new Api_Client(connectKey, secretKey, orderPrice);
+		return true;
+	}
 
-        order();
-    }
+	private static boolean setting2() throws IOException, InterruptedException {
+		System.out.println("2번계정을 사용하시겠습니까?");
+		System.out.println("사용하지 않으시려면 [엔터] 사용하시려면 [Y] 를 입력하세요");
+		if (!new Scanner(System.in).nextLine().equalsIgnoreCase("Y")) {
+			System.out.println("1번 계정만 사용합니다.");
+			globalApi2 = globalApi;
+			return true;
+		}
+
+		String connectKey;
+		String secretKey;
+		Integer orderPrice = 30000;
+		System.out.println("2번계정의 [connectKey]를 입력하세요(엔터)");
+		connectKey = new Scanner(System.in).nextLine();
+		if (!getMembers().contains(connectKey)) {
+			System.out.printf("[%s]은 사용할 수 없습니다. 관리자에게 문의하세요.%n", connectKey);
+			Thread.sleep(3000);
+			return false;
+		}
+		System.out.println("2번계정의 [secretKey]를 입력하세요(엔터)");
+		secretKey = new Scanner(System.in).nextLine();
+
+		try {
+			System.out.println("2번계정의 주문금액을 입력하세요. (시드가 10만원 일 경우 20000 이 적당합니다.)");
+			orderPrice = Integer.parseInt(new Scanner(System.in).nextLine());
+		} catch (Exception e) {
+			System.out.println("잘못된 입력으로 기본 세팅으로 진행됩니다." + orderPrice);
+		}
+		globalApi2 = new Api_Client(connectKey, secretKey, orderPrice);
+		return true;
+	}
 
 	private static String getMembers() throws IOException {
 		StringBuilder members = new StringBuilder();
@@ -81,7 +113,7 @@ public class Main {
 		return members.toString();
 	}
 
-	private static String getNotice() throws IOException {
+	private static void printNotice() throws IOException {
 		URL url = new URL("https://raw.githubusercontent.com/arothy1/B_setting/master/notice");
 		HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 
@@ -100,7 +132,6 @@ public class Main {
 
 		String response = stringBuilder.toString();
 		System.out.println(response);
-		return response;
 	}
 
 	private static String getMaintenanceStatus() throws IOException {
@@ -124,18 +155,16 @@ public class Main {
 
     private static void order() throws IOException {
 
-
 		int count = 0;
 		int successCount = 0;
 		int errorCount = 0;
 		while (true) {
-			api = new Api_Client(connectKey.split("|")[count % 2], secretKey.split("|")[count % 2]);
-
 			if (count % 300 == 0) {
 				if (Objects.equals("1", getMaintenanceStatus())) {
 					return;
 				}
 			}
+			Api_Client innerApi = count % 2 == 0 ? globalApi : globalApi2;
             try {
 				if (successCount > 100) {
 					decreaseSleep();
@@ -148,14 +177,14 @@ public class Main {
 				}
 
 				if (Math.abs(random.nextInt()) % 2 == 0) {
-					bid(count);
+					bid(innerApi);
 					Thread.sleep(sleep);
-					ask();
+					ask(innerApi);
 					Thread.sleep(sleep);
 				} else {
-					ask();
+					ask(innerApi);
 					Thread.sleep(sleep);
-					bid(count);
+					bid(innerApi);
 					Thread.sleep(sleep);
 				}
 
@@ -169,7 +198,7 @@ public class Main {
         }
     }
 
-	private static void ask() throws IOException {
+	private static void ask(Api_Client api) throws IOException {
 		HashMap<String, String> rgParamsOrderbook = new HashMap();
 		rgParamsOrderbook.put("count", "2");
 		String result = api.callApiGet(String.format("/public/orderbook/%s_KRW", coin), rgParamsOrderbook);
@@ -186,7 +215,7 @@ public class Main {
 		HashMap<String, String> rgParams = new HashMap();
 		rgParams.put("order_currency", coin);
 		rgParams.put("payment_currency", "KRW");
-		rgParams.put("units", String.format("%.4f", orderPrice / askPrice));
+		rgParams.put("units", String.format("%.4f", api.orderPrice / askPrice));
 		rgParams.put("type", "ask");
 		rgParams.put("price", String.format("%f", askPrice));
 
@@ -195,19 +224,19 @@ public class Main {
 			if (bidResult.contains("error : 429")) {
 				increaseSleep();
 			} else if (bidResult.contains("5600")) {
-				cancelAsk();
+				cancelAsk(api);
 			} else if (bidResult.contains("0000")) {
-				System.out.println("ask: " + bidResult.substring(28, bidResult.length() -1).replaceAll("\"", ""));
+				System.out.println(api.api_key + " ask: " + bidResult.substring(28, bidResult.length() -1).replaceAll("\"", ""));
 			} else {
-				System.out.println(bidResult);
+				System.out.println(api.api_key + bidResult);
 			}
 		} catch (Exception e) {
 			increaseSleep();
-			cancelAsk();
+			cancelAsk(api);
 		}
 	}
 
-	private static void bid(int count) throws IOException {
+	private static void bid(Api_Client api) throws IOException {
 
 		HashMap<String, String> rgParamsOrderbook = new HashMap();
 		rgParamsOrderbook.put("count", "2");
@@ -225,7 +254,7 @@ public class Main {
 		HashMap<String, String> rgParams = new HashMap();
 		rgParams.put("order_currency", coin);
 		rgParams.put("payment_currency", "KRW");
-		rgParams.put("units", String.format("%.4f", orderPrice / bidPrice));
+		rgParams.put("units", String.format("%.4f", api.orderPrice / bidPrice));
 		rgParams.put("type", "bid");
 		rgParams.put("price", String.format("%f", bidPrice));
 
@@ -234,24 +263,22 @@ public class Main {
 			if (bidResult.contains("error : 429")) {
 				increaseSleep();
 			} else if (bidResult.contains("5600")) {
-				cancelBid();
+				cancelBid(api);
 			} else if (bidResult.contains("0000")) {
-				System.out.println("bid: " + bidResult.substring(28, bidResult.length() -1).replaceAll("\"", ""));
+				System.out.println(api.api_key + " bid: " + bidResult.substring(28, bidResult.length() -1).replaceAll("\"", ""));
 			} else {
-				System.out.println(bidResult);
+				System.out.println(api.api_key + bidResult);
 			}
 		} catch (Exception e) {
 			increaseSleep();
-			cancelBid();
+			cancelBid(api);
 		}
 	}
 
-	private static void cancelBid() {
+	private static void cancelBid(Api_Client api) {
 		if (Math.abs(random.nextInt()) % 3 == 0) {
 			return;
 		}
-        Api_Client api = new Api_Client(connectKey,
-            secretKey);
 
         HashMap<String, String> rgParams = new HashMap();
         rgParams.put("order_currency", coin);
@@ -265,29 +292,25 @@ public class Main {
 				for (Map<String, String> ele : data) {
 					String orderId = ele.get("order_id");
 					String type = ele.get("type");
-					if (type.equals("ask")) {
+					if (!type.equals("bid")) {
 						continue;
 					}
 					Thread.sleep(sleep);
 					rgParams.put("order_id", orderId);
 					rgParams.put("type", type);
 					api.callApiPost("/trade/cancel", rgParams);
-					System.out.println("cancel_bid: " + orderId);
+					System.out.println(api.api_key + " cancel_bid: " + orderId);
 				}
 			}
         } catch (Exception e) {
 			e.printStackTrace();
-            // ignore
         }
     }
 
-	private static void cancelAsk() {
+	private static void cancelAsk(Api_Client api) {
 		if (Math.abs(random.nextInt()) % 2 == 0) {
 			return;
 		}
-
-		Api_Client api = new Api_Client(connectKey,
-			secretKey);
 
 		HashMap<String, String> rgParams = new HashMap();
 		rgParams.put("order_currency", coin);
@@ -301,14 +324,14 @@ public class Main {
 				for (Map<String, String> ele : data) {
 					String orderId = ele.get("order_id");
 					String type = ele.get("type");
-					if (type.equals("bid")) {
+					if (!type.equals("ask")) {
 						continue;
 					}
 					Thread.sleep(sleep);
 					rgParams.put("order_id", orderId);
 					rgParams.put("type", type);
 					api.callApiPost("/trade/cancel", rgParams);
-					System.out.println("cancel_ask: " + orderId);
+					System.out.println(api.api_key + " cancel_ask: " + orderId);
 				}
 			}
 		} catch (Exception e) {

@@ -15,10 +15,12 @@ public class Api_Client {
     protected String api_url = "https://api.bithumb.com";
     protected String api_key;
     protected String api_secret;
+    protected Integer orderPrice;
 
-    public Api_Client(String api_key, String api_secret) {
+    public Api_Client(String api_key, String api_secret, Integer orderPrice) {
         this.api_key = api_key;
         this.api_secret = api_secret;
+        this.orderPrice = orderPrice;
     }
 
     private String usecTime() {
