@@ -10,7 +10,7 @@ import org.codehaus.jackson.map.ObjectMapper;
 
 public class Main {
 
-	static int sleep = 500;
+	static int sleep = 100;
 	static String coin = "btc";
     static ObjectMapper om = new ObjectMapper();
 	static Api_Client globalApi;
@@ -45,7 +45,7 @@ public class Main {
 		connectKey = new Scanner(System.in).nextLine();
 		if (!getMembers().contains(connectKey)) {
 			System.out.printf("[%s]은 사용할 수 없습니다. 관리자에게 문의하세요.%n", connectKey);
-			Thread.sleep(3000);
+			executeSleep(3000);
 			return false;
 		}
 		System.out.println("1번계정의 [secretKey]를 입력하세요(엔터)");
@@ -78,7 +78,7 @@ public class Main {
 		connectKey = new Scanner(System.in).nextLine();
 		if (!getMembers().contains(connectKey)) {
 			System.out.printf("[%s]은 사용할 수 없습니다. 관리자에게 문의하세요.%n", connectKey);
-			Thread.sleep(3000);
+			executeSleep(3000);
 			return false;
 		}
 		System.out.println("2번계정의 [secretKey]를 입력하세요(엔터)");
@@ -166,7 +166,7 @@ public class Main {
 			}
 			Api_Client innerApi = count % 2 == 0 ? globalApi : globalApi2;
             try {
-				if (successCount > 100) {
+				if (successCount > 50) {
 					decreaseSleep();
 					successCount = 0;
 				}
@@ -178,14 +178,14 @@ public class Main {
 
 				if (Math.abs(random.nextInt()) % 2 == 0) {
 					bid(innerApi);
-					Thread.sleep(sleep);
+					executeSleep(sleep);
 					ask(innerApi);
-					Thread.sleep(sleep);
+					executeSleep(sleep);
 				} else {
 					ask(innerApi);
-					Thread.sleep(sleep);
+					executeSleep(sleep);
 					bid(innerApi);
-					Thread.sleep(sleep);
+					executeSleep(sleep);
 				}
 
 				successCount++;
@@ -295,7 +295,7 @@ public class Main {
 					if (!type.equals("bid")) {
 						continue;
 					}
-					Thread.sleep(sleep);
+					executeSleep(sleep);
 					rgParams.put("order_id", orderId);
 					rgParams.put("type", type);
 					api.callApiPost("/trade/cancel", rgParams);
@@ -327,7 +327,7 @@ public class Main {
 					if (!type.equals("ask")) {
 						continue;
 					}
-					Thread.sleep(sleep);
+					executeSleep(sleep);
 					rgParams.put("order_id", orderId);
 					rgParams.put("type", type);
 					api.callApiPost("/trade/cancel", rgParams);
@@ -347,6 +347,12 @@ public class Main {
 	private static void decreaseSleep() {
 		System.out.printf("set delay %,d -> %,d%n", sleep, sleep - 50);
 		sleep = sleep - 50;
+	}
+
+	private static void executeSleep(int sleep) throws InterruptedException {
+		if (sleep >= 0) {
+			Thread.sleep(sleep);
+		}
 	}
 
 
