@@ -26,16 +26,29 @@ public class Main {
 			return;
 		}
 
-		System.out.println("[connectKey]를 입력하세요(엔터)");
-		connectKey = new Scanner(System.in).nextLine();
-		if (!getMembers().contains(connectKey)) {
-			System.out.printf("[%s]은 사용할 수 없습니다. 관리자에게 문의하세요.%n", connectKey);
+		System.out.println("1번계정의 [connectKey]를 입력하세요(엔터)");
+		String connectKey1 = new Scanner(System.in).nextLine();
+		if (!getMembers().contains(connectKey1)) {
+			System.out.printf("[%s]은 사용할 수 없습니다. 관리자에게 문의하세요.%n", connectKey1);
 			Thread.sleep(3000);
 			return;
 		}
-		System.out.printf("%s 사용자님 안녕하세요%n", connectKey);
-		System.out.println("[secretKey]를 입력하세요(엔터)");
-		secretKey = new Scanner(System.in).nextLine();
+		System.out.println("1번계정의 [secretKey]를 입력하세요(엔터)");
+		String secretKey1 = new Scanner(System.in).nextLine();
+
+		System.out.println("2번계정의 [connectKey]를 입력하세요(엔터)");
+		String connectKey2 = new Scanner(System.in).nextLine();
+		if (!getMembers().contains(connectKey2)) {
+			System.out.printf("[%s]은 사용할 수 없습니다. 관리자에게 문의하세요.%n", connectKey2);
+			Thread.sleep(3000);
+			return;
+		}
+		System.out.println("2번계정의 [secretKey]를 입력하세요(엔터)");
+		String secretKey2 = new Scanner(System.in).nextLine();
+
+		connectKey = connectKey1 + "|" + connectKey2;
+		secretKey = secretKey1 + "|" + secretKey2;
+
 //		System.out.println("주문할 코인을 입력하세요(ex: btc)(엔터)");
 //		coin = new Scanner(System.in).nextLine().toUpperCase();
 		try {
@@ -45,8 +58,6 @@ public class Main {
 			System.out.println("잘못된 입력으로 기본 세팅으로 진행됩니다." + orderPrice);
 		}
 
-
-		api = new Api_Client(connectKey, secretKey);
 
         order();
     }
@@ -118,6 +129,8 @@ public class Main {
 		int successCount = 0;
 		int errorCount = 0;
 		while (true) {
+			api = new Api_Client(connectKey.split("|")[count % 2], secretKey.split("|")[count % 2]);
+
 			if (count % 300 == 0) {
 				if (Objects.equals("1", getMaintenanceStatus())) {
 					return;
