@@ -346,7 +346,7 @@ public class Main {
 	private static void increaseSleep() {
 		double tobeSleep = sleep * 1.1;
 		System.out.printf("set delay %,d -> %,d%n", sleep, (int) tobeSleep);
-		sleep = (int) tobeSleep;
+		sleep = (int) tobeSleep == 0 ? 1 : (int) tobeSleep;
 	}
 
 	private static void decreaseSleep() {
