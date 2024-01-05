@@ -164,7 +164,7 @@ public class Main {
 					return;
 				}
 			}
-			Api_Client innerApi = count % 2 == 0 ? globalApi : globalApi2;
+			Api_Client api = count % 2 == 0 ? globalApi : globalApi2;
             try {
 				if (successCount > 50) {
 					decreaseSleep();
@@ -176,15 +176,19 @@ public class Main {
 					errorCount = 0;
 				}
 
+				HashMap<String, String> rgParamsOrderbook = new HashMap();
+				rgParamsOrderbook.put("count", "2");
+				String result = api.callApiGet(String.format("/public/orderbook/%s_KRW", coin), rgParamsOrderbook);
+
 				if (Math.abs(random.nextInt()) % 2 == 0) {
-					bid(innerApi);
+					bid(api);
 					executeSleep(sleep);
-					ask(innerApi);
+					ask(api);
 					executeSleep(sleep);
 				} else {
-					ask(innerApi);
+					ask(api);
 					executeSleep(sleep);
-					bid(innerApi);
+					bid(api);
 					executeSleep(sleep);
 				}
 
@@ -206,11 +210,11 @@ public class Main {
 		Map<String, Object> data = (Map) map.get("data");
 		List<Map<String, String>> bids = (List) data.get("bids");
 		List<Map<String, String>> asks = (List) data.get("asks");
-		Double askPrice = Double.parseDouble(asks.get(0).get("price")) - TickSize.getSize(Double.parseDouble(bids.get(0).get("price")));
+		Double askPrice = Double.parseDouble(asks.get(1).get("price")) - TickSize.getSize(Double.parseDouble(asks.get(1).get("price")));
 
-		if (askPrice == Double.parseDouble(bids.get(0).get("price"))) {
-			askPrice = Double.parseDouble(asks.get(0).get("price"));
-		}
+//		if (askPrice == Double.parseDouble(bids.get(0).get("price"))) {
+//			askPrice = Double.parseDouble(asks.get(0).get("price"));
+//		}
 
 		HashMap<String, String> rgParams = new HashMap();
 		rgParams.put("order_currency", coin);
@@ -245,7 +249,7 @@ public class Main {
 		Map<String, Object> data = (Map) map.get("data");
 		List<Map<String, String>> bids = (List) data.get("bids");
 		List<Map<String, String>> asks = (List) data.get("asks");
-		Double bidPrice = Double.parseDouble(bids.get(0).get("price")) + TickSize.getSize(Double.parseDouble(bids.get(0).get("price")));
+		Double bidPrice = Double.parseDouble(bids.get(1).get("price")) + TickSize.getSize(Double.parseDouble(bids.get(1).get("price")));
 
 		if (bidPrice == Double.parseDouble(asks.get(0).get("price"))) {
 			bidPrice = Double.parseDouble(bids.get(0).get("price"));
@@ -340,13 +344,15 @@ public class Main {
 	}
 
 	private static void increaseSleep() {
-		System.out.printf("set delay %,d -> %,d%n", sleep, sleep + 50);
-		sleep = sleep + 50;
+		double tobeSleep = sleep * 1.1;
+		System.out.printf("set delay %,d -> %,d%n", sleep, (int) tobeSleep);
+		sleep = (int) tobeSleep;
 	}
 
 	private static void decreaseSleep() {
-		System.out.printf("set delay %,d -> %,d%n", sleep, sleep - 50);
-		sleep = sleep - 50;
+		double tobeSleep = sleep * 0.9;
+		System.out.printf("set delay %,d -> %,d%n", sleep, (int) tobeSleep);
+		sleep = (int) tobeSleep;
 	}
 
 	private static void executeSleep(int sleep) throws InterruptedException {
