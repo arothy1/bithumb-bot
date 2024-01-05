@@ -176,10 +176,6 @@ public class Main {
 					errorCount = 0;
 				}
 
-				HashMap<String, String> rgParamsOrderbook = new HashMap();
-				rgParamsOrderbook.put("count", "2");
-				String result = api.callApiGet(String.format("/public/orderbook/%s_KRW", coin), rgParamsOrderbook);
-
 				if (Math.abs(random.nextInt()) % 2 == 0) {
 					bid(api);
 					executeSleep(sleep);
