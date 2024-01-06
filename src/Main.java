@@ -206,7 +206,7 @@ public class Main {
 		Map<String, Object> data = (Map) map.get("data");
 		List<Map<String, String>> bids = (List) data.get("bids");
 		List<Map<String, String>> asks = (List) data.get("asks");
-		Double askPrice = Double.parseDouble(asks.get(1).get("price"));
+		Double askPrice = Double.parseDouble(asks.get(1).get("price")) - TickSize.getSize(Double.parseDouble(asks.get(1).get("price")));
 
 //		if (askPrice == Double.parseDouble(bids.get(0).get("price"))) {
 //			askPrice = Double.parseDouble(asks.get(0).get("price"));
@@ -245,7 +245,7 @@ public class Main {
 		Map<String, Object> data = (Map) map.get("data");
 		List<Map<String, String>> bids = (List) data.get("bids");
 		List<Map<String, String>> asks = (List) data.get("asks");
-		Double bidPrice = Double.parseDouble(bids.get(1).get("price"));
+		Double bidPrice = Double.parseDouble(bids.get(1).get("price")) + TickSize.getSize(Double.parseDouble(bids.get(1).get("price")));
 
 //		if (bidPrice == Double.parseDouble(asks.get(0).get("price"))) {
 //			bidPrice = Double.parseDouble(bids.get(0).get("price"));
