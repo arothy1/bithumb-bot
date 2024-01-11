@@ -202,6 +202,7 @@ public class Main {
 		int count = 0;
 		int successCount = 0;
 		int errorCount = 0;
+		double priceDifference = 0d;
 		while (true) {
 			if (count % 300 == 0) {
 				if (Objects.equals("1", getMaintenanceStatus())) {
@@ -221,19 +222,28 @@ public class Main {
 				}
 
 
-
-				if (getUpbitBtcPrice() > getBithumbBtcPrice()) {
+				Double upbitBtcPrice = getUpbitBtcPrice();
+				Double bithumbBtcPrice = getBithumbBtcPrice();
+				double newPriceDifference = upbitBtcPrice - bithumbBtcPrice;
+				if (newPriceDifference > priceDifference) {
+					System.out.println(String.format("[increased diff] %,.0f > %,.0f", priceDifference, newPriceDifference));
+					bid(api);
+					executeSleep(sleep);
 					bid(api);
 					executeSleep(sleep);
 					ask(api);
 					executeSleep(sleep);
 				} else {
+					System.out.println(String.format("[decreased diff] %,.0f > %,.0f", priceDifference, newPriceDifference));
+					ask(api);
+					executeSleep(sleep);
 					ask(api);
 					executeSleep(sleep);
 					bid(api);
 					executeSleep(sleep);
 				}
 
+				priceDifference = newPriceDifference;
 				successCount++;
             } catch (Exception e) {
 				errorCount++;
@@ -322,9 +332,9 @@ public class Main {
 	}
 
 	private static void cancelBid(Api_Client api) {
-		if (Math.abs(random.nextInt()) % 3 == 0) {
-			return;
-		}
+//		if (Math.abs(random.nextInt()) % 3 == 0) {
+//			return;
+//		}
 
         HashMap<String, String> rgParams = new HashMap();
         rgParams.put("order_currency", coin);
@@ -354,9 +364,9 @@ public class Main {
     }
 
 	private static void cancelAsk(Api_Client api) {
-		if (Math.abs(random.nextInt()) % 2 == 0) {
-			return;
-		}
+//		if (Math.abs(random.nextInt()) % 2 == 0) {
+//			return;
+//		}
 
 		HashMap<String, String> rgParams = new HashMap();
 		rgParams.put("order_currency", coin);
