@@ -226,20 +226,12 @@ public class Main {
 				Double bithumbBtcPrice = getBithumbBtcPrice();
 				double newPriceDifference = upbitBtcPrice - bithumbBtcPrice;
 				if (newPriceDifference > priceDifference) {
-					System.out.println(String.format("[increased diff] %,.0f > %,.0f", priceDifference, newPriceDifference));
+//					System.out.println(String.format("[increased diff] %,.0f > %,.0f", priceDifference, newPriceDifference));
 					bid(api);
-					executeSleep(sleep);
-					bid(api);
-					executeSleep(sleep);
-					ask(api);
 					executeSleep(sleep);
 				} else {
-					System.out.println(String.format("[decreased diff] %,.0f > %,.0f", priceDifference, newPriceDifference));
+//					System.out.println(String.format("[decreased diff] %,.0f > %,.0f", priceDifference, newPriceDifference));
 					ask(api);
-					executeSleep(sleep);
-					ask(api);
-					executeSleep(sleep);
-					bid(api);
 					executeSleep(sleep);
 				}
 
