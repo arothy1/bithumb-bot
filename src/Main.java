@@ -248,7 +248,7 @@ public class Main {
 
 	private static void ask(Api_Client api) throws IOException {
 		HashMap<String, String> rgParamsOrderbook = new HashMap();
-		rgParamsOrderbook.put("count", "2");
+		rgParamsOrderbook.put("count", "5");
 		String result = api.callApiGet(String.format("/public/orderbook/%s_KRW", coin), rgParamsOrderbook);
 		Map<String, Object> map = om.readValue(result, Map.class);
 		Map<String, Object> data = (Map) map.get("data");
@@ -287,13 +287,13 @@ public class Main {
 	private static void bid(Api_Client api) throws IOException {
 
 		HashMap<String, String> rgParamsOrderbook = new HashMap();
-		rgParamsOrderbook.put("count", "2");
+		rgParamsOrderbook.put("count", "5");
 		String result = api.callApiGet(String.format("/public/orderbook/%s_KRW", coin), rgParamsOrderbook);
 		Map<String, Object> map = om.readValue(result, Map.class);
 		Map<String, Object> data = (Map) map.get("data");
 		List<Map<String, String>> bids = (List) data.get("bids");
 		List<Map<String, String>> asks = (List) data.get("asks");
-		Double bidPrice = Double.parseDouble(bids.get(1).get("price")) + TickSize.getSize(Double.parseDouble(bids.get(1).get("price")));
+		Double bidPrice = Double.parseDouble(bids.get(2).get("price")) + TickSize.getSize(Double.parseDouble(bids.get(2).get("price")));
 
 //		if (bidPrice == Double.parseDouble(asks.get(0).get("price"))) {
 //			bidPrice = Double.parseDouble(bids.get(0).get("price"));
