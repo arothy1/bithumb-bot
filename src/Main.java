@@ -4,8 +4,12 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
-
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Random;
+import java.util.Scanner;
 import org.codehaus.jackson.map.ObjectMapper;
 
 public class Main {
@@ -153,6 +157,46 @@ public class Main {
         return stringBuilder.toString();
 	}
 
+	private static Double getUpbitBtcPrice() throws IOException {
+		URL url = new URL("https://crix-api-endpoint.upbit.com/v1/crix/candles/days/?code=CRIX.UPBIT.KRW-BTC");
+		HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+
+		connection.setRequestMethod("GET");
+		connection.setUseCaches(false);
+
+		BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8));
+		StringBuilder stringBuilder = new StringBuilder();
+		String inputLine;
+
+		while ((inputLine = bufferedReader.readLine()) != null)  {
+			stringBuilder.append(inputLine);
+		}
+		bufferedReader.close();
+		List<Map<String, Object>> candles = om.readValue(stringBuilder.toString(), List.class);
+		Map<String, Object> candle = candles.get(0);
+		return (Double) candle.get("tradePrice");
+	}
+
+	private static Double getBithumbBtcPrice() throws IOException {
+		URL url = new URL("https://api.bithumb.com/public/ticker/BTC");
+		HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+
+		connection.setRequestMethod("GET");
+		connection.setUseCaches(false);
+
+		BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8));
+		StringBuilder stringBuilder = new StringBuilder();
+		String inputLine;
+
+		while ((inputLine = bufferedReader.readLine()) != null)  {
+			stringBuilder.append(inputLine);
+		}
+		bufferedReader.close();
+		Map<String, Object> candle = om.readValue(stringBuilder.toString(), Map.class);
+		Map<String, String> data = (Map<String, String>) candle.get("data");
+		return Double.parseDouble(data.get("closing_price"));
+	}
+
     private static void order() throws IOException {
 
 		int count = 0;
@@ -176,7 +220,9 @@ public class Main {
 					errorCount = 0;
 				}
 
-				if (Math.abs(random.nextInt()) % 2 == 0) {
+
+
+				if (getUpbitBtcPrice() > getBithumbBtcPrice()) {
 					bid(api);
 					executeSleep(sleep);
 					ask(api);
